@@ -66,8 +66,12 @@ def update_store():
     pass
 
 
-def update_inventory():
-    pass
+def update_inventory(db: Session, inventory: InventorySchema):
+    _inventory = db.query(Inventory).filter(Inventory.sid == inventory.sid, Inventory.pid == inventory.pid).first()
+    _inventory.quantity += inventory.quantity
+    db.commit()
+    db.refresh(_inventory)
+    return _inventory
 
 
 # Delete Operations

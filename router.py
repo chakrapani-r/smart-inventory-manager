@@ -37,6 +37,11 @@ def create_inventory(request: RequestInventory, db: Session = Depends(get_db)):
     _inventory = crud.create_inventory(db, request.parameter)
     return Response(code="200", status="ok", message="Success", result=_inventory).dict(exclude_none=True)
 
+@router.put('/inventory/')
+def update_inventory(request: RequestInventory, db: Session = Depends(get_db)):
+    _inventory = crud.update_inventory(db, request.parameter)
+    return Response(code="200", status="ok", message="Success", result=_inventory).dict(exclude_none=True)
+
 
 # @router.get('/product', response_model=List[ProductSchema])
 @router.get('/product')

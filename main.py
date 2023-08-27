@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 import router
 from dbconnection import engine
 import model
-import cron
+#import cron
 
 model.Base.metadata.create_all(bind=engine)
 
