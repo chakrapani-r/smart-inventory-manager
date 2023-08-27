@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+
+import router
 from dbconnection import engine
 import model
 
@@ -18,3 +20,5 @@ async def home():
     <center>
     </body></html>
     '''
+
+app.include_router(router.router)
