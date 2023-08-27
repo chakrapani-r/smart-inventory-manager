@@ -10,7 +10,7 @@ model.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
-@app.get('/', response_class=HTMLResponse)
+@app.get('/', response_class=HTMLResponse, include_in_schema=False)
 async def home():
     return '''
     <html></body>
@@ -21,4 +21,4 @@ async def home():
     </body></html>
     '''
 
-app.include_router(router.router)
+app.include_router(router.router, tags=["Inventory"])
