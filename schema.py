@@ -51,7 +51,7 @@ class RequestInventory(BaseModel):
 
 class RequestBulkInventory(BaseModel):
     sid: int
-    pids: List[int]
+    pids: str
 
 
 class Response(BaseModel, Generic[T]):
