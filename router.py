@@ -17,27 +17,27 @@ def get_db():
         db.close()
 
 
-# @router.post('/product/create', response_model=ProductSchema)
-@router.post('/product/create')
+# @router.post('/product', response_model=ProductSchema)
+@router.post('/product')
 def create_product(request: RequestProduct, db: Session = Depends(get_db)):
     _product = crud.create_product(db, request.parameter)
     return Response(code="200", status="ok", message="Success", result=_product).dict(exclude_none=True)
 
 
-# @router.post('/store/create', response_model=StoreSchema)
-@router.post('/store/create')
+# @router.post('/store', response_model=StoreSchema)
+@router.post('/store')
 def create_store(request: RequestStore, db: Session = Depends(get_db)):
     _store = crud.create_store(db, request.parameter)
     return Response(code="200", status="ok", message="Success", result=_store).dict(exclude_none=True)
 
 
-# @router.post('/inventory/create', response_model=InventorySchema)
-@router.post('/inventory/create')
+# @router.post('/inventory', response_model=InventorySchema)
+@router.post('/inventory')
 def create_inventory(request: RequestInventory, db: Session = Depends(get_db)):
     _inventory = crud.create_inventory(db, request.parameter)
     return Response(code="200", status="ok", message="Success", result=_inventory).dict(exclude_none=True)
 
-@router.put('/inventory/')
+@router.put('/inventory')
 def update_inventory(request: RequestInventory, db: Session = Depends(get_db)):
     _inventory = crud.update_inventory(db, request.parameter)
     return Response(code="200", status="ok", message="Success", result=_inventory).dict(exclude_none=True)

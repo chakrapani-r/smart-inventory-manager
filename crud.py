@@ -21,13 +21,23 @@ def create_store(db: Session, store: StoreSchema):
     db.refresh(_store)
     return _store
 
-
+# Updates absolute inventory used to override or create new entry
 def create_inventory(db: Session, inventory: InventorySchema):
-    _inventory = Inventory(sid=inventory.sid, pid=inventory.pid, quantity=inventory.quantity)
-    db.add(_inventory)
+    _inventory = db.query(Inventory).populate_existing().with_for_update(nowait=False, of=Inventory).filter(Inventory.sid == inventory.sid, Inventory.pid == inventory.pid).first()
+    if _inventory is None:
+        _inventory = Inventory(sid=inventory.sid, pid=inventory.pid, quantity=inventory.quantity)
+        db.add(_inventory)
+    else:
+        _inventory.quantity = inventory.quantity
     db.commit()
     db.refresh(_inventory)
     return _inventory
+    #
+    # _inventory = Inventory(sid=inventory.sid, pid=inventory.pid, quantity=inventory.quantity)
+    # db.add(_inventory)
+    # db.commit()
+    # db.refresh(_inventory)
+    # return _inventory
 
 
 # Read / Get Operations
@@ -67,8 +77,14 @@ def update_store():
 
 
 def update_inventory(db: Session, inventory: InventorySchema):
-    _inventory = db.query(Inventory).filter(Inventory.sid == inventory.sid, Inventory.pid == inventory.pid).first()
-    _inventory.quantity += inventory.quantity
+    _inventory = db.query(Inventory).populate_existing().with_for_update(nowait=False, of=Inventory).filter(Inventory.sid == inventory.sid, Inventory.pid == inventory.pid).first()
+    if _inventory is not None:
+        # Change inventory by delta.
+        _inventory.quantity += inventory.quantity
+    else:
+        # Use delta as the absolute inventory as inventory doesn't exist
+        _inventory = Inventory(sid=inventory.sid, pid=inventory.pid, quantity=inventory.quantity)
+        db.add(_inventory)
     db.commit()
     db.refresh(_inventory)
     return _inventory
