@@ -4,10 +4,11 @@ from fastapi.responses import HTMLResponse
 import router
 from dbconnection import engine
 import model
+import cron
 
 model.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(swagger_ui_parameters={"defaultModelsExpandDepth": -1})
 
 
 @app.get('/', response_class=HTMLResponse, include_in_schema=False)
