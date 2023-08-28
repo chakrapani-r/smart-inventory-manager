@@ -1,6 +1,6 @@
 from typing import Generic, Optional, TypeVar, List
 from pydantic import BaseModel, Field, EmailStr
-
+import datetime
 T = TypeVar('T')
 
 
@@ -68,3 +68,14 @@ class User(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr = Field(...)
     password: str = Field(...)
+
+class PurchaseOrderSchema(BaseModel):
+    po_id: int
+    sid: int
+    pid: int
+    quantity: int
+    created: datetime.datetime
+    fulfilled: datetime.datetime
+    vendor: int = None
+    status: str = None
+    grn_id: int = None
