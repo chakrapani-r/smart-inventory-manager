@@ -1,13 +1,16 @@
+import datetime
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from dbconnection import SessionLocal
 from sqlalchemy.orm import Session
 from typing import Annotated
-from pydantic import Field
 import crud
+import grn
 # from schema import ProductSchema, StoreSchema, InventorySchema
 from schema import RequestProduct, RequestStore, RequestInventory, RequestBulkInventory, Response, User, UserLogin
 from auth_bearer import JWTBearer
 from auth import signJWT
+
+
 from collections import defaultdict
 
 router = APIRouter()
@@ -24,63 +27,63 @@ def get_db():
 @router.post('/product', dependencies=[Depends(JWTBearer())], tags=["Product"])
 async def create_product(request: RequestProduct, db: Session = Depends(get_db)):
     _product = crud.create_product(db, request.parameter)
-    return Response(code="200", status="ok", message="Success", result=_product).dict(exclude_none=True)
+    return Response(code="200", status="ok", message="Success", result=_product).model_dump(exclude_none=True)
 
 
 @router.put('/product', dependencies=[Depends(JWTBearer())], tags=["Product"])
 async def update_product(request: RequestProduct, db: Session = Depends(get_db)):
     _product = crud.update_product(db=db, pid=request.parameter.pid, product=request.parameter)
-    return Response(code="200", status="ok", message="Success", result=_product).dict(exclude_none=True)
+    return Response(code="200", status="ok", message="Success", result=_product).model_dump(exclude_none=True)
 
 
 @router.post('/store', dependencies=[Depends(JWTBearer())], tags=["Store"])
 async def create_store(request: RequestStore, db: Session = Depends(get_db)):
     _store = crud.create_store(db, request.parameter)
-    return Response(code="200", status="ok", message="Success", result=_store).dict(exclude_none=True)
+    return Response(code="200", status="ok", message="Success", result=_store).model_dump(exclude_none=True)
 
 
 @router.put('/store', dependencies=[Depends(JWTBearer())], tags=["Store"])
 async def update_store(request: RequestStore, db: Session = Depends(get_db)):
     _store = crud.update_store(db=db, sid=request.parameter.sid, store=request.parameter)
-    return Response(code="200", status="ok", message="Success", result=_store).dict(exclude_none=True)
+    return Response(code="200", status="ok", message="Success", result=_store).model_dump(exclude_none=True)
 
 
 @router.post('/inventory', tags=["Inventory"])
 async def create_inventory(request: RequestInventory, db: Session = Depends(get_db)):
     _inventory = crud.create_inventory(db, request.parameter)
-    return Response(code="200", status="ok", message="Success", result=_inventory).dict(exclude_none=True)
+    return Response(code="200", status="ok", message="Success", result=_inventory).model_dump(exclude_none=True)
 
 @router.put('/inventory', tags=["Inventory"])
 async def update_inventory(request: RequestInventory, db: Session = Depends(get_db)):
     _inventory = crud.update_inventory(db, request.parameter)
-    return Response(code="200", status="ok", message="Success", result=_inventory).dict(exclude_none=True)
+    return Response(code="200", status="ok", message="Success", result=_inventory).model_dump(exclude_none=True)
 
 
 @router.get('/product', dependencies=[Depends(JWTBearer())], tags=["Product"])
 async def get_product(offset: int = 0, db: Session = Depends(get_db)):
     limit = 100
     _products = crud.get_products(db=db, skip=offset, limit=limit)
-    return Response(code="200", status="ok", message="Success", result=_products).dict(exclude_none=True)
+    return Response(code="200", status="ok", message="Success", result=_products).model_dump(exclude_none=True)
 
 
 @router.get('/product/{pid}', dependencies=[Depends(JWTBearer())], tags=["Product"])
 async def get_product_by_pid(pid: Annotated[int, Path(title="The PID of the product to get", ge=1)], db: Session = Depends(get_db)):
     _product = crud.get_product_by_pid(db, pid)
-    return Response(code="200", status="ok", message="Success", result=_product).dict(exclude_none=True)
+    return Response(code="200", status="ok", message="Success", result=_product).model_dump(exclude_none=True)
 
 
 @router.get('/store', dependencies=[Depends(JWTBearer())], tags=["Store"])
 async def get_store(offset: int = 0, db: Session = Depends(get_db)):
     limit = 100
     _stores = crud.get_stores(db, offset, limit)
-    return Response(code="200", status="ok", message="Success", result=_stores).dict(exclude_none=True)
+    return Response(code="200", status="ok", message="Success", result=_stores).model_dump(exclude_none=True)
 
 
 @router.get('/store/{sid}', dependencies=[Depends(JWTBearer())], tags=["Store"])
 async def get_store_by_sid(sid: Annotated[int, Path(title="The SID of the store to get", ge=1)], db: Session = Depends(get_db)):
     limit = 100
     _store = crud.get_store_by_sid(db, sid)
-    return Response(code="200", status="ok", message="Success", result=_store).dict(exclude_none=True)
+    return Response(code="200", status="ok", message="Success", result=_store).model_dump(exclude_none=True)
 
 
 # pids are expected to be csv
@@ -101,7 +104,8 @@ async def get_inventory(sid: int, pids: str, db: Session = Depends(get_db)):
     # result = list(result.values())
 
     _result = [{**u.__dict__, **v.__dict__} for u, v in zip(_inv, _products)]
-    return Response(code="200", status="ok", message="Success", result=_result).dict(exclude_none=True)
+    # return Response(code="200", status="ok", message="Success", result=_result).dict(exclude_none=True)
+    return Response(code="200", status="ok", message="Success", result=_result).model_dump(exclude_none=True)
 
 @router.post("/user/signup", tags=["user"])
 async def create_user(user: User):
@@ -122,3 +126,21 @@ def validate_user(data: UserLogin):
     if data.password:
         return True
     return False
+
+# This should be triggered every few mins
+@router.get("/cron/purchase-orders", include_in_schema=False)
+async def cron(db: Session = Depends(get_db)):
+    grn.process_purchase_orders(db)
+    _time = datetime.datetime.now()
+    return {
+        "message": f"Purchase orders cron run completed @ {_time}"
+    }
+
+# This shall be triggered as per the lead time..once every few hours or hourly
+@router.get("/cron/sales-trends", include_in_schema=False)
+async def cron(db: Session = Depends(get_db)):
+    grn.calculate_sales_trends(db)
+    _time = datetime.datetime.now()
+    return {
+        "message": f"Sales trends cron run completed @ {_time}"
+    }
