@@ -12,10 +12,6 @@ db = config("db_name")
 port = config("db_port")
 
 DATABASE_URL= f"postgresql://{username}:%s@{host}:{port}/{db}" % quote_plus(password)
-# print(DATABASE_URL_1)
-# #DATABASE_URL_1 = DATABASE_URL_1 % quote_plus(password)
-# print(DATABASE_URL_1)
-# DATABASE_URL = "postgresql://postgres:%s@localhost:5432/inventory-manager" % quote_plus("Exercise@2022")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
