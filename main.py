@@ -20,4 +20,4 @@ async def home():
     </body></html>
     '''
 
-app.include_router(router.router, tags=["Inventory"])
+app.include_router(router.router)

@@ -1,5 +1,6 @@
 from typing import List
 from sqlalchemy.orm import Session
+from sqlalchemy import select, join
 from schema import ProductSchema, StoreSchema, InventorySchema
 from model import Product, Store, Inventory
 
@@ -33,8 +34,15 @@ def create_inventory(db: Session, inventory: InventorySchema):
 
 
 # Read / Get Operations
-def get_products(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Product).offset(skip).limit(limit).all()
+def get_products(db: Session, skip: int = 0, limit: int = 100, pid_list: List[int] = None):
+    if pid_list is None:
+        return db.query(Product).offset(skip).limit(limit).all()
+    else:
+        # filter by given pids.
+        print('pid list of product get')
+        return db.query(Product).filter(Product.pid.in_(pid_list)).offset(skip).limit(limit).all()
+            # inventory_details = db.query(Inventory).filter(Inventory.sid == sid, Inventory.pid.in_(pids)).all()
+            # return None
 
 
 def get_product_by_pid(db: Session, pid: int):
@@ -49,11 +57,25 @@ def get_store_by_sid(db: Session, sid: int):
     return db.query(Store).filter(Store.sid == sid).first()
 
 
-def get_inventory(db: Session, sid: int, pids: str):
-    pids = pids.split(',')
+def get_inventory(db: Session, sid: int, pid_list: List[int]):
     # Need to double-check if and is required here.
-    return db.query(Inventory).filter(Inventory.sid == sid, Inventory.pid.in_(pids)).all()
-#    return db.query(Inventory).filter(Store.sid == sid).filter(Product.pid in pids).all()
+    # product_details = db.query(Product).filter(Product.pid.in_(pids)).all()
+    # product_details_tmp = db.query(Inventory).join(Product, Inventory.pid == Product.pid).all()
+    # x = select([Inventory, Product]).select_from(Inventory.join(Product, Inventory.pid == Product.pid))
+    # r = db.execute(x)
+    # product_details_tmp = db.query(Inventory, Product).join(Inventory.pid == Product.pid).filter(Inventory.sid == sid, Inventory.pid.in_(pids), Product.pid.in_(pids)).all()
+    # for p in r:
+    #     print(p.__dict__)
+    # print("----")
+    inventory_details = db.query(Inventory).filter(Inventory.sid == sid, Inventory.pid.in_(pid_list)).all()
+#    print(product_details.__dict__)
+#     for product in product_details:
+#         print(product.__dict__)
+#     for _inv in inventory_details:
+#         print(vars(_inv))
+
+    return inventory_details
+#    return db.query(Inventory).filter(Store.sid == sid).filter(Product.pid in pid_list).all()
 
 
 # Update Operations

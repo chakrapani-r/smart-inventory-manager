@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, Float, ForeignKey, PrimaryKeyConstraint
 #from geoalchemy2 import Geometry
 from dbconnection import Base
+from pydantic import Field, EmailStr
 
 
 class Product(Base):
@@ -37,3 +38,19 @@ class Inventory(Base):
          {}
     )
 
+# class User(Base):
+#     name: str = Field(...)
+#     email: EmailStr = Field(...)
+#     password: str = Field(...)
+#
+#     class Config:
+#         schema_extra = {
+#             "example": {
+#                 "name": "Chakrapani R",
+#                 "email": "chakrapani.reddivari@gmail.com",
+#                 "password": "mediumpassword"
+#             }
+#         }
+# class UserLogin(Base):
+#     email: EmailStr = Field(...)
+#     password: str = Field(...)

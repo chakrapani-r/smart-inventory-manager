@@ -1,5 +1,5 @@
 from typing import Generic, Optional, TypeVar, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 T = TypeVar('T')
 
@@ -59,3 +59,12 @@ class Response(BaseModel, Generic[T]):
     status: str
     message: str
     result: Optional[T] = None
+
+class User(BaseModel):
+    name: str = Field(...)
+    email: EmailStr = Field(...)
+    password: str = Field(...)
+
+class UserLogin(BaseModel):
+    email: EmailStr = Field(...)
+    password: str = Field(...)
