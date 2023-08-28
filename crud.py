@@ -101,8 +101,6 @@ def update_inventory(db: Session, inventory: InventorySchema):
 
 
 # Delete Operations
-
-
 def delete_product():
     pass
 
