@@ -46,7 +46,7 @@ def calculate_sales_trends(db):
     # interval = 1.25
     t = datetime.datetime.now() - timedelta(hours=interval)
     distinct_combinations = (db.query(InventoryLogs.pid, InventoryLogs.sid, func.sum(InventoryLogs.quantity_change)).filter(InventoryLogs.timestamp >= t, InventoryLogs.quantity_change < 0).group_by(InventoryLogs.pid, InventoryLogs.sid).all())
-    sales_threshold = config("sales_trend_threshold")
+    sales_threshold = int(config("sales_trend_threshold"))
     for pid, sid, delta in distinct_combinations:
         delta *= -1
         if delta > sales_threshold:

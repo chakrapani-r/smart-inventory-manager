@@ -132,6 +132,7 @@ def validate_user(data: UserLogin):
 async def cron(db: Session = Depends(get_db)):
     grn.process_purchase_orders(db)
     _time = datetime.datetime.now()
+    print(f"Purchase Orders cron ran succesfully @{_time}")
     return {
         "message": f"Purchase orders cron run completed @ {_time}"
     }
@@ -141,6 +142,7 @@ async def cron(db: Session = Depends(get_db)):
 async def cron(db: Session = Depends(get_db)):
     grn.calculate_sales_trends(db)
     _time = datetime.datetime.now()
+    print(f"Sales Trends cron ran succesfully @{_time}")
     return {
         "message": f"Sales trends cron run completed @ {_time}"
     }
