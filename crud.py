@@ -107,8 +107,9 @@ def update_store(db: Session, sid: int, store: StoreSchema):
 
 def update_inventory(db: Session, inventory: InventorySchema):
     _inventory = db.query(Inventory).populate_existing().with_for_update(nowait=False, of=Inventory).filter(Inventory.sid == inventory.sid, Inventory.pid == inventory.pid).first()
-    prev_quantity = _inventory.quantity
+    prev_quantity = 0
     if _inventory is not None:
+        prev_quantity = _inventory.quantity
         # Change inventory by delta.
         _inventory.quantity += inventory.quantity
     else:
