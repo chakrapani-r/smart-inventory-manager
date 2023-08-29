@@ -1,8 +1,8 @@
 from typing import List
 from sqlalchemy.orm import Session
-from sqlalchemy import select, join
 from schema import ProductSchema, StoreSchema, InventorySchema
 from model import Product, Store, Inventory
+import restock
 
 # Create Operations
 def create_product(db: Session, product: ProductSchema):
@@ -39,10 +39,7 @@ def get_products(db: Session, skip: int = 0, limit: int = 100, pid_list: List[in
         return db.query(Product).offset(skip).limit(limit).all()
     else:
         # filter by given pids.
-        print('pid list of product get')
         return db.query(Product).filter(Product.pid.in_(pid_list)).offset(skip).limit(limit).all()
-            # inventory_details = db.query(Inventory).filter(Inventory.sid == sid, Inventory.pid.in_(pids)).all()
-            # return None
 
 
 def get_product_by_pid(db: Session, pid: int):
@@ -110,16 +107,29 @@ def update_store(db: Session, sid: int, store: StoreSchema):
 
 def update_inventory(db: Session, inventory: InventorySchema):
     _inventory = db.query(Inventory).populate_existing().with_for_update(nowait=False, of=Inventory).filter(Inventory.sid == inventory.sid, Inventory.pid == inventory.pid).first()
+    prev_quantity = _inventory.quantity
     if _inventory is not None:
         # Change inventory by delta.
         _inventory.quantity += inventory.quantity
     else:
         # Use delta as the absolute inventory as inventory doesn't exist
         _inventory = Inventory(sid=inventory.sid, pid=inventory.pid, quantity=inventory.quantity)
+        prev_quantity = 0
         db.add(_inventory)
+
     db.commit()
     db.refresh(_inventory)
-    return _inventory
+
+    sid = _inventory.sid
+    pid = _inventory.pid
+    new_quantity = _inventory.quantity
+
+    # Sending an inventory change log, ideally write this to a queue.
+    _x = restock.inventory_change_event(db=db, sid=inventory.sid, pid=inventory.pid,
+                                        current_quantity=new_quantity, prev_quantity=prev_quantity,
+                                        delta=inventory.quantity)
+
+    return {"sid": sid, "pid": pid, "quantity": new_quantity}
 
 
 # Delete Operations
