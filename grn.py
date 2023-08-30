@@ -5,6 +5,7 @@ from model import Inventory, PurchaseOrder, InventoryLogs
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 from decouple import config
+from loguru import logger
 
 # This is not the most efficient approach, we will limit 1000 per cron run for now
 # consider this is called when PO is fulfilled and GRN happens
@@ -32,14 +33,15 @@ def process_purchase_orders(db: Session):
             #     print(f"Failed to process PO {po.po_id}")
 
 def trigger_inventory_update(db: Session, inventory: Inventory, po: PurchaseOrder):
-        try:
-            _r = crud.update_inventory(db, inventory)
-            po.fulfilled = datetime.datetime.now()
-            po.status = "closed"
-            db.commit()
-            db.refresh(po)
-        except:
-            print(f"Failed to process PO {po.po_id}")
+    try:
+        _r = crud.update_inventory(db, inventory)
+        po.fulfilled = datetime.datetime.now()
+        po.status = "closed"
+        db.commit()
+        db.refresh(po)
+    except Exception as e:
+        logger.exception("Error processing PO: {}", e)
+        print(f"Failed to process PO {po.po_id}")
 
 def calculate_sales_trends(db):
     interval = int(config("sales_trend_interval"))
@@ -61,7 +63,7 @@ def calculate_sales_trends(db):
     # optimize for the cost restocking
 
 def create_priority_purchase_order(db, sid: int, pid: int, quantity: int):
-    #quantity = calculate_quantity_to_purchase(db, pid, sid, current_quantity)
+    # quantity = calculate_quantity_to_purchase(db, pid, sid, current_quantity)
     if quantity > 0:
         # create PO
         created = datetime.datetime.now()
