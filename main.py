@@ -23,11 +23,12 @@ async def log_requests(request: Request, call_next):
     processing_time = (end_time - start_time).total_seconds() * 1000  # Convert to milliseconds
 
     logger.info(
-        "HTTP {method} {url} - Status: {status_code} - Duration: {duration:.2f}ms",
+        "{ip} - HTTP {method} {url} - Status: {status_code} - Duration: {duration:.2f}ms",
         method=request.method,
         url=request.url,
         status_code=response.status_code,
-        duration=processing_time
+        duration=processing_time,
+        ip=request.client.host
     )
 
     return response
