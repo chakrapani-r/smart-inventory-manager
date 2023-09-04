@@ -4,6 +4,7 @@ import router
 from dbconnection import engine
 import model
 from loguru import logger
+# from logging_config import logger
 from datetime import datetime
 
 app = FastAPI(title='SmartInventoryManager', swagger_ui_parameters={"defaultModelsExpandDepth": -1})
