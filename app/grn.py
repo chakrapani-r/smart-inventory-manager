@@ -11,6 +11,7 @@ from loguru import logger
 # consider this is called when PO is fulfilled and GRN happens
 # update PO Status trigger GRN
 def process_purchase_orders(db: Session):
+    # sort so that approved is processed first.
     _res = db.query(PurchaseOrder).filter(or_(PurchaseOrder.status == "created", PurchaseOrder.status == "approved")).limit(1000).all()
     time_delay = int(config("time_delay_for_po"))
     for po in _res:

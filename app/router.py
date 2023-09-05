@@ -9,7 +9,7 @@ import grn
 from schema import RequestProduct, RequestStore, RequestInventory, RequestBulkInventory, Response, User, UserLogin
 from auth_bearer import JWTBearer
 from auth import signJWT
-
+import concurrency_test
 
 from collections import defaultdict
 
@@ -145,4 +145,16 @@ async def cron(db: Session = Depends(get_db)):
     print(f"Sales Trends cron ran succesfully @{_time}")
     return {
         "message": f"Sales trends cron run completed @ {_time}"
+    }
+
+# Test Url
+@router.get("/test", include_in_schema=False)
+async def cron(db: Session = Depends(get_db)):
+
+    res = concurrency_test.run_concurrency_test()
+
+    _time = datetime.datetime.now()
+    # print(f"Concurrency test done @{_time}")
+    return {
+        "message": f"{res} @ {_time}"
     }

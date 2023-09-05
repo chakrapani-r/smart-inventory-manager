@@ -7,6 +7,7 @@ from loguru import logger
 # from logging_config import logger
 from datetime import datetime
 
+
 app = FastAPI(title='SmartInventoryManager', swagger_ui_parameters={"defaultModelsExpandDepth": -1})
 
 model.Base.metadata.create_all(bind=engine)

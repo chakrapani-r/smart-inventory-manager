@@ -10,7 +10,6 @@ password = config("db_password")
 host = config("db_host")
 db = config("db_name")
 port = config("db_port")
-print(password)
 DATABASE_URL= f"postgresql://{username}:%s@{host}:{port}/{db}" % quote_plus(password)
 
 engine = create_engine(DATABASE_URL)
